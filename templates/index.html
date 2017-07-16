@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>博客论坛</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="/static/css/commons.css">
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+</head>
+<body>
+
+
+
+<!-- 头部标签 -->
+<nav class="navbar navbar-default no-border-radius">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/index.html">博客论坛</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+
+          {% if type_id %}
+                <li><a href="/index.html"> 全部 <span class="sr-only">(current)</span></a></li>
+          {% else %}
+               <li class="active"><a href="/index.html"> 全部 <span class="sr-only">(current)</span></a></li>
+          {% endif %}
+
+
+          {% for item in type_choices_list %}
+              {% if item.0 == type_id %}
+                <li class="active"><a href="/all/{{ item.0 }}?page=1">{{ item.1 }}</a></li>
+              {% else %}
+                <li><a href="/all/{{ item.0 }}">{{ item.1 }}</a></li>
+              {% endif %}
+          {% endfor %}
+
+
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+
+
+
+          {% if request.session.username %}
+              <img style="width: 30px;height: 30px; margin-top: 10px;border-radius:10px" src="{{ user_obj.avatar }}">
+              <li class="nav-name1"><a  href="#">{{ request.session.username }}</a></li>
+              <li><a href="/{{ request.session.username }}.html">个人主页</a></li>
+              <li><a href="/logout.html">注销</a></li>
+
+          {% else %}
+              <li><a href="/login.html">登陆</a></li>
+              <li><a href="/register.html">注册</a></li>
+          {% endif %}
+
+
+
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+<div>
+    <div class="container">
+
+        <!-- 内容 -->
+        <div class="col-lg-8">
+            <div class="article-list" >
+
+                <div class="article-item clearfix">
+                    <h4 class="article-head"><a href="">Django-视图函数</a></h4>
+                    <div class="article-body clearfix">
+                        <div class="article-body-img col-lg-1">
+                        <a class="left-img" href=""><img src="/static/img/avatar/jp1.png" alt=""></a>
+                        </div>
+                        <div class="article-body-content col-lg-11">
+                        之前两种 (JQuery Ajax&原生Ajax上传文件) 都要依赖FormData对象进行操作，虽然好用，但兼容性稍微差点，
+                        在html5之后提出的对象，现在主流的浏览器都支持，ie10以上才能用，其他更老的浏览器就不支持FormData对象，这时候就要用伪造Ajax上传，兼容性好。
+                        </div>
+                    </div>
+                    <span><i  class="fa fa-user-circle show-name" aria-hidden="true"></i><a href="/spring.html"> spring</a></span>
+                    <span style="margin-left: 20px">发布于：2017-7-10</span>
+                    <span style="margin-left: 40px"><i class="fa fa-commenting-o" aria-hidden="true"></i> 2</span>
+                    <span style="margin-left: 10px"><span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> 6</span>
+                    <span style="margin-left: 10px"> <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span> 7</span>
+
+                </div>
+
+
+
+                {% for item in article_list %}
+                <div class="article-item clearfix">
+                    <h4 class="article-head"><a href="">{{ item.title }}</a></h4>
+                    <div class="article-body clearfix">
+                        <div class="article-body-img col-lg-1">
+                        <a class="left-img" href=""><img src="{{ item.blog.user.avatar }}" alt=""></a>
+                        </div>
+                        <div class="article-body-content col-lg-11">
+                        {{ item.summary }}
+                        </div>
+
+                    </div>
+                    <span><i  class="fa fa-user-circle show-name" aria-hidden="true"></i> <a href="/{{ item.blog.site }}.html">{{ item.blog.user.username }}</a></span>
+                    <span style="margin-left: 20px">发布于：2017-7-10{{ item.create_time|date:"Y-m-d H:i:s" }}</span>
+                    <span style="margin-left: 40px"><i class="fa fa-commenting-o" aria-hidden="true"></i> {{ item.comment_count }}</span>
+                    <span style="margin-left: 10px"><span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> {{ item.up_count }}</span>
+                    <span style="margin-left: 10px"> <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span> {{ item.down_count }}</span>
+
+                </div>
+                {% endfor %}
+
+
+
+            </div>
+        </div>
+
+
+
+        <!-- 右侧标签 -->
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                  <div class="panel-heading">
+                        <h3 class="panel-title">吐血推荐</h3>
+                  </div>
+                  <div class="panel-body">
+                      <p><a href="">文章：Django-视图函数</a></p>
+                      <p><a href="">文章：Django-视图函数</a></p>
+                  </div>
+            </div>
+            <div class="panel panel-default">
+                  <div class="panel-heading">
+                        <h3 class="panel-title">评论最多</h3>
+                  </div>
+                  <div class="panel-body">
+                      <p><a href="">文章一</a></p>
+                      <p><a href="">文章二</a></p>
+                      <p><a href="">文章三</a></p>
+                  </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 分页 -->
+
+<nav aria-label="Page navigation" style="width: 650px;margin: 30px auto">
+  <ul class="pagination">
+    {% if page_info.pager  %}
+        <li>
+          <a href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+    {% endif %}
+
+    <li>{{ page_info.pager|safe }}</li>
+
+    {% if page_info.pager  %}
+        <li>
+          <a href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+    {% endif %}
+  </ul>
+</nav>
+
+
+
+</body>
+</html>

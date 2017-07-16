@@ -1,0 +1,36 @@
+
+
+
+
+
+
+/*index.html*/
+.no-border-radius{
+    border-radius: 0 !important;
+}
+.left-img{
+    float: left;
+}
+.container .article-body img{
+    width: 50px;
+    height: 50px;
+
+}
+.show-name{
+    margin-left: 10px!important;
+    margin-top: 10px!important;
+}
+
+.article-item{
+    border-bottom: dotted 1px!important;
+    margin-top: 10px!important;
+}
+
+
+/*login.html*/
+.login{
+    width: 500px;
+    margin: 60px auto;
+}
+
+

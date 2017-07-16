@@ -3,6 +3,8 @@ from django.shortcuts import render,redirect,HttpResponse
 from app01 import models
 from utils.pager import PageInfo
 
+from app01.forms import LoginForm
+from app01.forms import RegisterForm
 
 def auth(func):
     def wrapper(request,*args,**kwargs):
@@ -14,40 +16,6 @@ def auth(func):
             return redirect('/login.html')
     return wrapper
 
-from django.forms import Form
-from django.forms import fields
-from django.forms import widgets
-class LoginForm(Form):
-    username = fields.CharField(
-        required=True,
-        error_messages={
-            'required': '用户名不能为空!'
-        },
-        widget = widgets.TextInput(attrs={'class': 'form-control','placeholder':'user','name':'username'})
-
-    )
-
-    password = fields.CharField(
-        required=True,
-        error_messages={
-            'required': '密码不能为空!'
-        },
-        widget=widgets.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password', 'name': 'password'})
-    )
-    code = fields.CharField(
-        required=True,
-        min_length=5,
-        max_length=5,
-        error_messages={
-            'required': '验证码不能为空!',
-            'min_length': '验证码为5位!',
-            'max_length': '验证码为5位!',
-
-        },
-        widget = widgets.TextInput(attrs={'class': 'form-control', 'placeholder': 'code', 'name': 'code'})
-
-    )
-
 
 
 def index(request,*args,**kwargs):
@@ -58,10 +26,13 @@ def index(request,*args,**kwargs):
     if type_id:
         condition['article_type_id'] = type_id
         all_count = models.Article.objects.filter(**condition).count()
-    c =request.path_info
-    print(c)
+
     page_info = PageInfo(request.GET.get('page'), all_count, 6,str(request.path_info))
     article_list = models.Article.objects.filter(**condition)[page_info.start:page_info.end]
+
+    # 如果少于一页不显现分页
+    if all_count <= 6:
+        page_info = None
 
     type_choicesList = models.Article.type_choices
     if request.session.get('username'):
@@ -85,6 +56,10 @@ def check_code(request):
     request.session['code'] = code
 
     return HttpResponse(stream.getvalue())
+
+
+
+
 
 
 def login(request):
@@ -128,79 +103,6 @@ def logout(request):
 
 
 
-class RegisterForm(Form):
-    username = fields.CharField(
-        max_length=32,
-        min_length=4,
-        required=True,
-        error_messages={
-            'max_length': '用户名太长！',
-            'min_length':'用户名太短！',
-            'required': '用户名不能为空!',
-        },
-        widget=widgets.TextInput(attrs={'class': 'form-control', 'placeholder': 'user', 'name': 'username'})
-    )
-
-    nickname = fields.CharField(
-        max_length=32,
-        min_length=4,
-        required=True,
-        error_messages={
-            'max_length': '昵称太长！',
-            'min_length':'昵称太短！',
-            'required': '昵称不能为空!',
-        },
-        widget=widgets.TextInput(attrs={'class': 'form-control', 'placeholder': 'nickname', 'name': 'nickname'})
-    )
-
-    email = fields.EmailField(
-        required=True,
-        error_messages={
-            'required': '用户名不能为空!',
-        },
-        widget=widgets.TextInput(attrs={'class': 'form-control', 'placeholder': 'email', 'name': 'email'})
-    )
-
-    password = fields.CharField(
-        max_length=64,
-        min_length=6,
-        required=True,
-        error_messages={
-            'max_length': '密码太长！',
-            'min_length': '密码太短！',
-            'required': '密码不能为空!'
-        },
-        widget=widgets.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password', 'name': 'password'})
-    )
-    password02 = fields.CharField(
-        max_length=64,
-        min_length=6,
-        required=True,
-        error_messages={
-            'max_length': '密码太长！',
-            'min_length': '密码太短！',
-            'required': '密码不能为空!'
-        },
-        widget=widgets.PasswordInput(attrs={'class': 'form-control', 'placeholder': '请再次确认', 'name': 'password02'})
-    )
-    code = fields.CharField(
-        required=True,
-        min_length=5,
-        max_length=5,
-        error_messages={
-            'required': '验证码不能为空!',
-            'min_length': '验证码为5位!',
-            'max_length': '验证码为5位!',
-
-        },
-        widget=widgets.TextInput(attrs={'class': 'form-control', 'placeholder': 'code', 'name': 'code'})
-
-    )
-
-
-
-
-
 
 
 def register(request):
@@ -236,7 +138,7 @@ def register(request):
 def upload(request):
         file_obj = request.FILES.get('HeadPicture')
         import os
-        file_path = os.path.join('static',file_obj.name)
+        file_path = os.path.join('static/img/avatar',file_obj.name)
         with open(file_path,'wb') as f:
             for chunk in file_obj.chunks():
                 f.write(chunk)
@@ -266,6 +168,18 @@ def userblog(request,site,*args,**kwargs):
         user_obj = blog_obj.user
         username = user_obj.username
 
+
+        status = False
+        if request.session.get('username'):
+            login_obj = models.UserInfo.objects.filter(username=request.session.get('username')).first()
+            if login_obj.username == user_obj.username:
+                status = True
+
+
+
+        else:
+            login_obj = None
+
         article_list = models.Article.objects.filter(blog__user__username=username)
         focus_obj = models.UserFans.objects.filter(follower__username=username)
 
@@ -277,35 +191,42 @@ def userblog(request,site,*args,**kwargs):
             category = kwargs['category']
             article_list = models.Article.objects.filter(blog__user__username=username,category=category)
 
+        all_count = article_list.count()
+        page_info = PageInfo(request.GET.get('page'), all_count, 6, str(request.path_info))
+        article_list = article_list[page_info.start:page_info.end]
 
-
-
+        # 如果少于一页不显现分页
+        if all_count <= 6:
+            page_info = None
 
 
         from django.db.models import Count
 
         a2t_list = models.Article2Tag.objects.filter(tag__blog__site=site).values('tag__title','tag__nid').annotate(aa = Count('tag__title'))
+        # print(a2t_list.query)
 
         category_list = models.Article.objects.filter(blog__site=site).values('category__title','category__nid').annotate(aa = Count('category__title'))
+        # print(category_list.query)
+
+
+        # mysql 数据库写法
+        # data_list = models.Article2Tag.objects.filter(blog__site=site).extra(select={'c':"date_format(create_time,'%%Y-%%m')"}).values('c').annotate(ct=Count('nid'))
 
 
 
         return render(request, 'UserBlog.html', {'blog_obj':blog_obj,
                                                  'user_obj':user_obj,
+                                                 'login_obj':login_obj,
                                                  'article_list':article_list,
                                                  'focus_obj':focus_obj,
+                                                 'status': status,
+                                                 'page_info': page_info,
 
                                                  'a2t_list':a2t_list,
                                                  'category_list':category_list
                                                  })
     else:
         return redirect('/index.html')
-
-
-
-
-
-
 
 
 
