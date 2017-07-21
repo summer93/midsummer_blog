@@ -1,0 +1,57 @@
+{% extends 'manage.html' %}
+
+
+{% block xx %}
+
+    <ol class="breadcrumb">
+
+        <li><a href="">文章管理</a></li>
+        <li class="active">添加</li>
+    </ol>
+
+
+
+
+    <form action="/manage/add.html" method="POST" style="margin-left: 30px" novalidate>
+        {% csrf_token %}
+
+        <h4>文章标题：</h4>
+            {{ obj.title }} {{ obj.errors.title.0 }}
+        <h4>文章简介：</h4>
+
+            {{ obj.summary }} {{ obj.errors.summary.0 }}
+        <h4>文章内容：</h4>
+
+            {{ obj.content }} {{ obj.errors.content.0 }}
+        <h4>大分类：</h4>
+            {{ obj.article_type_id }} {{ obj.errs.article_type_id.0 }}
+        <h4>分类：</h4>
+            {{ obj.category_id }} {{ obj.errs.category_id.0 }}
+        <h4>标签：</h4>
+            {{ obj.tags }} {{ obj.errs.tags.0 }}
+
+
+        <input type="submit" value="提交">
+
+    </form>
+
+
+
+
+
+    <script src="/static/kindeditor-4.1.10/kindeditor-all.js"></script>
+    <script>
+        KindEditor.create("#i1",{
+            width: "700px",
+            height: "300px",
+            resizeType:1,
+            uploadJson: '/manage/upload_img.html',
+            extraFileUploadParams:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}"
+            }
+        })
+    </script>
+
+
+
+{% endblock xx %}

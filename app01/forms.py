@@ -115,5 +115,48 @@ class RegisterForm(Form):
     )
 
 
+# 文章
+
+from app01 import models
+class ArticleForm(Form):
+    def __init__(self,val,*args,**kwargs):
+        super(ArticleForm,self).__init__(*args,**kwargs)
+        self.val = val
+        self.fields['category_id'].choices = models.Category.objects.filter(blog__user=self.val).values_list('nid','title').all()
+        self.fields['tags'].choices = models.Tag.objects.filter(blog__user=self.val).values_list('nid','title').all()
+
+        print(self.val)
+
+
+    title = fields.CharField(max_length=64)
+
+    summary = fields.CharField(max_length=128)
+
+    article_type_id = fields.IntegerField(
+        widget=widgets.RadioSelect(choices=models.Article.type_choices)
+    )
+    category_id = fields.ChoiceField(
+        widget=widgets.RadioSelect
+    )
+    tags = fields.MultipleChoiceField(
+        widget=widgets.CheckboxSelectMultiple
+    )
+
+
+
+    content = fields.CharField(
+        widget=widgets.Textarea(attrs={'id':'i1'})
+    )
+
+
+
+
+    def clean_content(self):
+        old = self.cleaned_data['content']
+        from utils.xss import xss
+
+        return xss(old)
+
+
 
 

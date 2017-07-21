@@ -19,6 +19,8 @@ class UserInfo(models.Model):
                                   through='UserFans',
                                   related_name='f',
                                   through_fields=('user', 'follower'))
+    def __str__(self):
+        return self.nickname
 
 
 class Blog(models.Model):
@@ -30,6 +32,9 @@ class Blog(models.Model):
     site = models.CharField(verbose_name='个人博客前缀', max_length=32, unique=True)
     theme = models.CharField(verbose_name='博客主题', max_length=32)
     user = models.OneToOneField(to='UserInfo', to_field='nid')
+
+    def __str__(self):
+        return self.title
 
 
 class UserFans(models.Model):
@@ -45,6 +50,7 @@ class UserFans(models.Model):
         ]
 
 
+
 class Category(models.Model):
     """
     博主个人文章分类表
@@ -53,6 +59,9 @@ class Category(models.Model):
     title = models.CharField(verbose_name='分类标题', max_length=32)
 
     blog = models.ForeignKey(verbose_name='所属博客', to='Blog', to_field='nid')
+
+    def __str__(self):
+        return "%s-%s" %(self.blog.title,self.title)
 
 
 class ArticleDetail(models.Model):
@@ -97,6 +106,10 @@ class Tag(models.Model):
     blog = models.ForeignKey(verbose_name='所属博客', to='Blog', to_field='nid')
 
 
+    def __str__(self):
+        return "%s-%s" %(self.blog.title,self.title)
+
+
 class Article(models.Model):
     nid = models.BigAutoField(primary_key=True)
     title = models.CharField(verbose_name='文章标题', max_length=128)
@@ -124,6 +137,9 @@ class Article(models.Model):
         through='Article2Tag',
         through_fields=('article', 'tag'),
     )
+
+    def __str__(self):
+        return "%s-%s-%s" %(self.blog.title,self.title,self.nid)
 
 
 class Article2Tag(models.Model):
