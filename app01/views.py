@@ -70,8 +70,6 @@ def index(request,*args,**kwargs):
 
 
 
-
-
 def check_code(request):
     """
     生成随机验证码
@@ -397,25 +395,30 @@ def article(request,site,val):
 
         # 评论
 
-        comments_list = models.Comment.objects.filter(article=val).values('nid', 'content','create_time','article_id','user__username','reply_id')
+        # comments_list = models.Comment.objects.filter(article=val).values('nid', 'content','create_time','article_id','user__username','reply_id')
+        #
+        # comments_list_dict = {}
+        # for item in comments_list:
+        #     item['child'] = []
+        #     comments_list_dict[item['nid']] = item
+        #
+        # result = []
+        # for item in comments_list:
+        #     pid = item['reply_id']
+        #     if pid:
+        #         comments_list_dict[pid]['child'].append(item)
+        #     else:
+        #         result.append(item)
 
-        comments_list_dict = {}
-        for item in comments_list:
-            item['child'] = []
-            comments_list_dict[item['nid']] = item
 
-        result = []
-        for item in comments_list:
-            pid = item['reply_id']
-            if pid:
-                comments_list_dict[pid]['child'].append(item)
-            else:
-                result.append(item)
 
-        from utils.comment import comment_tree
-        comment_str = comment_tree(result)
 
-        print(result)
+
+        # 后台 生成评论tree传入前端
+        # from utils.comment import comment_tree
+        # comment_str = comment_tree(result)
+        #
+        # print(result)
 
 
 
@@ -439,7 +442,8 @@ def article(request,site,val):
                                                  'data_list': date_list,
                                                  'articleDetail': article_detail,
 
-                                                 'comment_str': comment_str,
+                                                 # 'comment_str': comment_str,
+                                                # 'result':result
 
 
 
@@ -447,6 +451,42 @@ def article(request,site,val):
 
     else:
         return redirect('/index.html')
+
+
+def comments(request,article_nid):
+    response = {'status':True, 'data':None, 'msg':None}
+    print(article_nid)
+    try:
+        from django.db.models import F, Q
+        # comments_list = models.Comment.objects.filter(article=article_nid).values('nid', 'content', 'article_id',
+        #                                                                   'user__username', 'reply_id')
+        comments_list = models.Comment.objects.filter(article=article_nid).extra(
+            select={'ct': "date_format(create_time,'%%H:%%i:%%s')"
+                    }).values('ct','nid','content','article_id','reply_id','user')
+
+
+        comments_list_dict = {}
+        for item in comments_list:
+            item['child'] = []
+            comments_list_dict[item['nid']] = item
+
+        result = []
+        for item in comments_list:
+            pid = item['reply_id']
+            if pid:
+                comments_list_dict[pid]['child'].append(item)
+            else:
+                result.append(item)
+        response['data'] = result
+    except Exception as e:
+        response['status'] =False
+        response['msg'] = str(e)
+
+    print(''.center(100,'-'))
+    print(response)
+    return HttpResponse(json.dumps(response))
+
+
 
 
 
@@ -639,6 +679,15 @@ def upload_img(request):
     print(dic)
     import json
     return HttpResponse(json.dumps(dic))
+
+
+
+def test(request):
+    c = models.Article.objects.filter(nid__gt=10,nid__lt=20).values_list('nid')
+    print(c)
+    return HttpResponse('ok')
+
+
 
 
 

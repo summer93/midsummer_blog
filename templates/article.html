@@ -133,7 +133,7 @@
                     <h4 class="article-head"><a href="">{{ articleDetail.article.title }}</a></h4>
 
                     <span><i  class="fa fa-user-circle show-name" aria-hidden="true"></i> <a href="/{{ articleDetail.article.blog.site }}.html">{{ articleDetail.article.blog.user.username }}</a></span>
-                    <span style="margin-left: 20px">发布于：2017-7-10{{ articleDetail.article.create_time|date:"Y-m-d H:i:s" }}</span>
+                    <span style="margin-left: 20px">发布于：{{ articleDetail.article.create_time|date:"Y-m-d H:i:s" }}</span>
 
                     <span style="margin-left: 40px"><i class="fa fa-commenting-o" aria-hidden="true"></i> {{ articleDetail.article.comment_count }}</span>
 
@@ -206,13 +206,15 @@
 
                 <h3>评论</h3>
 
-                {{ comment_str|safe }}
+{#                {{ comment_str|safe }}#}
 
-
+                    <div id="comments"></div>
 
                 <p> </p>
 
+
                 <p>评论:</p>
+
                 <form action="" >
                     <textarea class="form-control" rows="3"></textarea>
                     <input onclick="comment(this)" style="margin-top: 10px" class="btn btn-primary" type="submit" value="提交">
@@ -233,6 +235,54 @@
 <script src="/static/jquery-3.2.1.js"></script>
 <script src="/static/jquery.cookie.js"></script>
 <script>
+
+    String.prototype.Format = function (arg) {
+        var temp = this.replace(/\{(\w+)\}/g,function (k,kk) {
+            return arg[kk]
+
+        });
+        return temp;
+
+    };
+
+    $(function () {
+        $.ajax({
+            url: '/comments-{{ articleDetail.article.nid }}/',
+            type: 'GET',
+            dataType: 'JSON',
+            success:function (arg) {
+                if (arg.status){
+                    var commentList = commentTree(arg.data);
+                    $('#comments').append(commentList)
+                }else {
+                    console.log(arg.msg)
+                }
+            }
+
+
+
+        })
+
+    });
+
+
+
+
+    function commentTree(commentList) {
+        var comment_str = "<div class='comment'>";
+        $.each(commentList,function (k,row) {
+            var temp =  "<div class='contents'>{f}{content}</div>".Format({'f':k+1,'content':row.content});
+
+            comment_str += temp;
+            if(row.child.length>0){
+                comment_str += commentTree(row.child);
+            }
+        });
+        comment_str += "</div>";
+
+        return comment_str
+    }
+
     function up(ths) {
         var article_nid = $(ths).children('input[name="article_nid"]').val();
         var token = $.cookie('csrftoken');
@@ -283,12 +333,6 @@
 
     }
 
-        $(function () {
-
-
-
-
-        })
 
 
 </script>

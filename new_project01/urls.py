@@ -19,6 +19,7 @@ from app01 import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^test/', views.test),
 
     # 主页
     url(r'^index.html$', views.index),
@@ -42,6 +43,10 @@ urlpatterns = [
 
     # 点赞踩
     url(r'^up_down/', views.up_down),
+
+    # 评论
+    url(r'^comments-(?P<article_nid>\w+)/', views.comments),
+
 
     # 后台管理 筛选
     url(r'^manage/all.html$', views.manage),
